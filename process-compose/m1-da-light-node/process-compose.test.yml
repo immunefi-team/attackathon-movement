@@ -1,0 +1,18 @@
+version: "3"
+
+environment:
+
+processes:
+
+  movement-celestia-da-light-node-e2e-tests:
+    command: |
+      set -e
+      cargo test -p movement-celestia-da-light-node-verifier -- --test-threads=1
+      cargo test -p movement-celestia-da-light-node-tests --features "sequencer" -- --test-threads=1
+    depends_on:
+      celestia-light-node: 
+        condition: process_healthy
+      movement-celestia-da-light-node: 
+        condition: process_healthy
+    availability:
+      exit_on_end: true

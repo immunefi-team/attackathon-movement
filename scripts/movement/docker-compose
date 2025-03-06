@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -e
+set -euo pipefail
+
+if [ "$#" -lt 3 ]; then
+    echo "Usage: $0 <service> <runtime> <flags> [docker-compose flags...]"
+    echo "Example: $0 movement-full-node docker-compose setup.local.test"
+    exit 1
+fi
+
+SERVICE=$1
+RUNTIME=$2 # runtime is already known, but we reuse
+FEATURES=$3
+
+IFS='.' read -r -a split <<< "$FEATURES"
+
+override_files=()
+for element in "${split[@]}"; do
+    override_files+=("-f")
+    override_files+=("docker/compose/$SERVICE/docker-compose.$element.yml")
+done
+
+echo "Running docker-compose for $SERVICE with override files: ${override_files[@]}..."
+docker compose --env-file .env -f docker/compose/$SERVICE/docker-compose.yml "${override_files[@]}" up "${@:4}"
